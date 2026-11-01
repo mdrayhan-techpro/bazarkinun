@@ -6,6 +6,9 @@
 SET FOREIGN_KEY_CHECKS = 0;
 SET NAMES utf8mb4;
 
+CREATE DATABASE IF NOT EXISTS `bazarkinun_db`;
+USE `bazarkinun_db`;
+
 -- --------------------------------------------------------
 -- Table structure for `audit_logs`
 -- --------------------------------------------------------

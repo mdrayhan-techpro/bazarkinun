@@ -69,3 +69,4 @@ EXPOSE 80 10000
 
 # Start server via startup script
 CMD ["/usr/local/bin/start-server.sh"]
+

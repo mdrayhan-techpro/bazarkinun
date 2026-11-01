@@ -18,6 +18,8 @@ fwrite($fp, "-- ========================================================\n\n");
 
 fwrite($fp, "SET FOREIGN_KEY_CHECKS = 0;\n");
 fwrite($fp, "SET NAMES utf8mb4;\n\n");
+fwrite($fp, "CREATE DATABASE IF NOT EXISTS `bazarkinun_db`;\n");
+fwrite($fp, "USE `bazarkinun_db`;\n\n");
 
 $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
 
@@ -84,3 +86,4 @@ fclose($fp);
 
 $sizeKb = round(filesize($outputFile) / 1024, 2);
 echo "\n✅ Successfully generated TiDB Production Dump: {$outputFile} ({$sizeKb} KB)\n";
+
