@@ -28,6 +28,11 @@ try {
         $status = strtolower(trim($input['status'] ?? 'active'));
         $location = trim($input['location'] ?? 'Dhaka');
 
+        // Role Hierarchy Guard: Only Super Admin can create Super Admin or Management Board accounts
+        if (($role === 'admin' || $role === 'management') && !isSuperAdmin()) {
+            jsonResponse(['status' => 'error', 'message' => "Permission Denied: Only Super Admin can create accounts with '{$role}' access."], 403);
+        }
+
         if (!in_array($status, ['active', 'inactive', 'locked'])) {
             $status = 'active';
         }
@@ -48,7 +53,11 @@ try {
             jsonResponse(['status' => 'error', 'message' => "An account with Phone '{$phone}' or Username '{$username}' already exists."], 400);
         }
 
-        $userPerms = !empty($input['permissions']) ? (is_array($input['permissions']) ? json_encode($input['permissions'], JSON_UNESCAPED_UNICODE) : strval($input['permissions'])) : null;
+        // Custom permissions guard: non-admins without manage_roles_permissions cannot assign custom permissions
+        $userPerms = null;
+        if (!empty($input['permissions']) && hasPermission('manage_roles_permissions')) {
+            $userPerms = is_array($input['permissions']) ? json_encode($input['permissions'], JSON_UNESCAPED_UNICODE) : strval($input['permissions']);
+        }
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("
             INSERT INTO users (name, username, phone, email, password, role, status, default_location, permissions) 
@@ -89,6 +98,25 @@ try {
         if ($userId <= 0) {
             jsonResponse(['status' => 'error', 'message' => 'Invalid user ID'], 400);
         }
+
+        // Fetch existing target user to enforce role hierarchy
+        $targetStmt = $pdo->prepare("SELECT id, role, username, permissions FROM users WHERE id = ?");
+        $targetStmt->execute([$userId]);
+        $targetUser = $targetStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$targetUser) {
+            jsonResponse(['status' => 'error', 'message' => 'User not found.'], 404);
+        }
+
+        // Role Hierarchy Guard: Non-admins cannot edit Super Admin or Management accounts
+        if (($targetUser['role'] === 'admin' || $targetUser['role'] === 'management') && !isSuperAdmin()) {
+            jsonResponse(['status' => 'error', 'message' => "Permission Denied: Only Super Admin can modify '{$targetUser['role']}' accounts."], 403);
+        }
+
+        // Role Hierarchy Guard: Non-admins cannot promote anyone to admin or management
+        if (($role === 'admin' || $role === 'management') && !isSuperAdmin()) {
+            jsonResponse(['status' => 'error', 'message' => "Permission Denied: Only Super Admin can assign the '{$role}' role."], 403);
+        }
+
         if (!in_array($status, ['active', 'inactive', 'locked'])) {
             $status = 'active';
         }
@@ -102,7 +130,12 @@ try {
             jsonResponse(['status' => 'error', 'message' => "Another user with Phone '{$phone}' or Username '{$username}' already exists."], 400);
         }
 
-        $userPerms = isset($input['permissions']) ? (is_array($input['permissions']) ? json_encode($input['permissions'], JSON_UNESCAPED_UNICODE) : strval($input['permissions'])) : null;
+        // Custom permissions guard: only callers with manage_roles_permissions can alter custom privileges
+        if (hasPermission('manage_roles_permissions')) {
+            $userPerms = isset($input['permissions']) ? (is_array($input['permissions']) ? json_encode($input['permissions'], JSON_UNESCAPED_UNICODE) : strval($input['permissions'])) : null;
+        } else {
+            $userPerms = $targetUser['permissions'];
+        }
 
         if (!empty($password)) {
             $hash = password_hash($password, PASSWORD_DEFAULT);
@@ -136,6 +169,11 @@ try {
 
         if (!$uData) {
             jsonResponse(['status' => 'error', 'message' => 'User not found.'], 404);
+        }
+
+        // Role Hierarchy Guard: Non-admins cannot delete Super Admin or Management accounts
+        if (($uData['role'] === 'admin' || $uData['role'] === 'management') && !isSuperAdmin()) {
+            jsonResponse(['status' => 'error', 'message' => "Permission Denied: Only Super Admin can delete '{$uData['role']}' accounts."], 403);
         }
 
         // Clean up staff locations & disassociate rider orders
@@ -301,10 +339,13 @@ try {
     // 1.3 Delete Management Account
     if ($action === 'delete_management') {
         requirePermission('delete_staff');
+        if (!isSuperAdmin()) {
+            jsonResponse(['status' => 'error', 'message' => 'Permission Denied: Only Super Admin can delete Management accounts.'], 403);
+        }
         $id = intval($input['id'] ?? 0);
         if ($id <= 0) jsonResponse(['status' => 'error', 'message' => 'Invalid account ID'], 400);
 
-        if ($id === 4) {
+        if ($id === 1) {
             jsonResponse(['status' => 'error', 'message' => 'Primary Super Admin account cannot be deleted.'], 400);
         }
 
@@ -368,10 +409,17 @@ try {
         $id = intval($input['id'] ?? 0);
         if ($id <= 0) jsonResponse(['status' => 'error', 'message' => 'Invalid staff ID'], 400);
 
-        $stmt = $pdo->prepare("SELECT status FROM users WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT id, role, status FROM users WHERE id = ?");
         $stmt->execute([$id]);
-        $current = $stmt->fetchColumn();
+        $target = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$target) jsonResponse(['status' => 'error', 'message' => 'User not found.'], 404);
 
+        // Role Hierarchy Guard: Only Super Admin can alter Super Admin or Management status
+        if (($target['role'] === 'admin' || $target['role'] === 'management') && !isSuperAdmin()) {
+            jsonResponse(['status' => 'error', 'message' => "Permission Denied: Only Super Admin can alter '{$target['role']}' account status."], 403);
+        }
+
+        $current = $target['status'];
         $newStatus = ($current === 'active') ? 'inactive' : 'active';
         $pdo->prepare("UPDATE users SET status = ? WHERE id = ?")->execute([$newStatus, $id]);
 
@@ -930,11 +978,17 @@ try {
     }
 
     if ($action === 'assign_user_role') {
+        requirePermission('manage_roles_permissions');
         $userId = intval($input['user_id'] ?? 0);
         $newRole = trim($input['role'] ?? '');
 
         if ($userId <= 0 || empty($newRole)) {
             jsonResponse(['status' => 'error', 'message' => 'Valid User ID and Role are required.'], 400);
+        }
+
+        // Role Hierarchy Guard: Only Super Admin can assign admin or management roles
+        if (($newRole === 'admin' || $newRole === 'management') && !isSuperAdmin()) {
+            jsonResponse(['status' => 'error', 'message' => 'Permission Denied: Only Super Admin can assign administrative roles.'], 403);
         }
 
         $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");

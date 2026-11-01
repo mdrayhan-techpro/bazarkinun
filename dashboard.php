@@ -2821,28 +2821,38 @@ if (!function_exists('renderRichEditor')) {
                                             </td>
                                             <td style="padding: 14px 18px; text-align: right;">
                                                 <div style="display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end;">
-                                                    <?php if ($isRdr && hasPermission('edit_staff')): ?>
+                                                    <?php 
+                                                        $isTargetProtected = ($isAdm || $isMng) && !isSuperAdmin();
+                                                        $canEditThisUser = hasPermission('edit_staff') && !$isTargetProtected;
+                                                        $canToggleThisUser = ($u['id'] != 1) && hasPermission('toggle_staff_status') && !$isTargetProtected;
+                                                        $canDeleteThisUser = ($u['id'] != 1) && hasPermission('delete_staff') && !$isTargetProtected;
+                                                    ?>
+                                                    <?php if ($isTargetProtected): ?>
+                                                        <span title="Protected Account: Only Super Admin can modify" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0;">
+                                                            <i class="fa-solid fa-lock" style="font-size: 10px; color: #94a3b8;"></i> Protected
+                                                        </span>
+                                                    <?php endif; ?>
+
+                                                    <?php if ($isRdr && hasPermission('edit_staff') && !$isTargetProtected): ?>
                                                         <button type="button" onclick='openAssignLocationModal(<?= json_encode($u, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)' title="Assign Locations" style="border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 6px; padding: 5px 9px; font-size: 12px; font-weight: 700; color: #1d4ed8; cursor: pointer;">
                                                             <i class="fa-solid fa-location-dot"></i>
                                                         </button>
                                                     <?php endif; ?>
-                                                    <?php if (hasPermission('edit_staff')): ?>
+                                                    <?php if ($canEditThisUser): ?>
                                                     <button type="button" onclick='openEditUserModal(<?= json_encode($u, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)' title="Edit User" style="border: 1px solid #fde68a; background: white; border-radius: 6px; padding: 5px 9px; font-size: 12px; font-weight: 700; color: #d97706; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='#fffbeb';" onmouseout="this.style.background='white';">
                                                         <i class="fa-solid fa-pen" style="color: #f59e0b;"></i>
                                                     </button>
                                                     <?php endif; ?>
 
-                                                    <?php if ($u['id'] != 1): ?>
-                                                        <?php if (hasPermission('toggle_staff_status')): ?>
-                                                        <button type="button" onclick="toggleStaffStatus(<?= $u['id'] ?>)" title="Toggle Active/Inactive" style="border: 1px solid #e2e8f0; background: white; border-radius: 6px; padding: 5px 9px; font-size: 12px; font-weight: 700; color: <?= $u['status'] === 'active' ? '#ef4444' : '#10b981' ?>; cursor: pointer;">
-                                                            <i class="fa-solid fa-power-off"></i>
-                                                        </button>
-                                                        <?php endif; ?>
-                                                        <?php if (hasPermission('delete_staff')): ?>
-                                                        <button type="button" onclick="deleteUser(<?= $u['id'] ?>, '<?= htmlspecialchars(addslashes($u['name'])) ?>')" title="Delete User" style="border: 1px solid #fecaca; background: white; border-radius: 6px; padding: 5px 9px; font-size: 12px; font-weight: 700; color: #dc2626; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='#fee2e2';" onmouseout="this.style.background='white';">
-                                                            <i class="fa-solid fa-trash-can"></i>
-                                                        </button>
-                                                        <?php endif; ?>
+                                                    <?php if ($canToggleThisUser): ?>
+                                                    <button type="button" onclick="toggleStaffStatus(<?= $u['id'] ?>)" title="Toggle Active/Inactive" style="border: 1px solid #e2e8f0; background: white; border-radius: 6px; padding: 5px 9px; font-size: 12px; font-weight: 700; color: <?= $u['status'] === 'active' ? '#ef4444' : '#10b981' ?>; cursor: pointer;">
+                                                        <i class="fa-solid fa-power-off"></i>
+                                                    </button>
+                                                    <?php endif; ?>
+                                                    <?php if ($canDeleteThisUser): ?>
+                                                    <button type="button" onclick="deleteUser(<?= $u['id'] ?>, '<?= htmlspecialchars(addslashes($u['name'])) ?>')" title="Delete User" style="border: 1px solid #fecaca; background: white; border-radius: 6px; padding: 5px 9px; font-size: 12px; font-weight: 700; color: #dc2626; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='#fee2e2';" onmouseout="this.style.background='white';">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
                                                     <?php endif; ?>
                                                 </div>
                                             </td>
@@ -9742,8 +9752,10 @@ if (!function_exists('renderRichEditor')) {
                             <option value="operation">Operation</option>
                             <option value="manager">Store Manager</option>
                             <option value="rider">Delivery Rider</option>
+                            <?php if (isSuperAdmin()): ?>
                             <option value="management">Management Board</option>
                             <option value="admin">Super Admin</option>
+                            <?php endif; ?>
                         </select>
                     </div>
                     <div>
@@ -9838,6 +9850,12 @@ if (!function_exists('renderRichEditor')) {
         }
 
         function openEditUserModal(user) {
+            const isSuperAdmin = <?= isSuperAdmin() ? 'true' : 'false' ?>;
+            if ((user.role === 'admin' || user.role === 'management') && !isSuperAdmin) {
+                showToast('Protected Account: Only Super Admin can edit this user.', false);
+                return;
+            }
+
             document.getElementById('uniUserId').value = user.id;
             document.getElementById('uniFullName').value = user.name || '';
             document.getElementById('uniUsername').value = user.username || '';
