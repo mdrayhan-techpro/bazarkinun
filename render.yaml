@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: bazarkinun-web
+    runtime: docker
+    plan: free
+    region: singapore # Singapore data center: Fastest latency for Bangladesh (~40ms)
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_URL
+        value: https://bazarkinun-web.onrender.com
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_SSL
+        value: "true"
+      - key: CURL_VERIFY_SSL
+        value: "true"
+      - key: DB_HOST
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false

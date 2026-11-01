@@ -1,0 +1,27 @@
+# robots.txt for BazarKinun.com
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /scratch/
+Disallow: /database/
+Disallow: /includes/
+Disallow: /dashboard.php
+Disallow: /portal_login.php
+Disallow: /staff_invoice_edit.php
+Disallow: /mng_customer_detail.php
+Disallow: /_backup_pre_responsive/
+
+Allow: /
+Allow: /shop
+Allow: /cart
+Allow: /write-list
+Allow: /upload-list
+Allow: /login
+Allow: /signup
+Allow: /assets/
+Allow: /css/
+Allow: /js/
+Allow: /uploads/
+
+Sitemap: https://bazarkinun.com/sitemap.xml
+

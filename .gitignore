@@ -1,0 +1,14 @@
+# Environment & Local Secrets
+.env
+.env.local
+
+# Temporary Scratch Files & Local Backups
+scratch/
+_backup_pre_responsive/
+*.log
+*.tmp
+*.bak
+
+# OS specific files
+.DS_Store
+Thumbs.db

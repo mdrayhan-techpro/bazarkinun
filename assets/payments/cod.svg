@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 484 220" width="484" height="220">
+  <defs>
+    <linearGradient id="codGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  <!-- Left Circular Badge -->
+  <circle cx="90" cy="110" r="75" fill="#ecfdf5" stroke="#10b981" stroke-width="6"/>
+  <!-- Cash & Hand Icon -->
+  <g transform="translate(48, 65)">
+    <rect x="18" y="10" width="48" height="26" rx="4" fill="#10b981"/>
+    <circle cx="42" cy="23" r="6" fill="#ecfdf5"/>
+    <text x="42" y="28" font-family="Arial, sans-serif" font-weight="bold" font-size="13" fill="#047857" text-anchor="middle">৳</text>
+    <path d="M8 50c6-3 15-5 24-5h36c5 0 9 3 9 7s-4 6-8 6H50l-12 7-14-3-8-10 12-2z" fill="#059669"/>
+  </g>
+  <!-- Text on Right -->
+  <text x="185" y="115" font-family="Arial, sans-serif" font-weight="900" font-size="82" fill="url(#codGrad)" letter-spacing="1">COD</text>
+  <text x="188" y="156" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#059669" letter-spacing="1.5">CASH ON DELIVERY</text>
+</svg>

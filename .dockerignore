@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+.env.local
+scratch/
+_backup_pre_responsive/
+*.log
+*.tmp
+database/*.php
+database/setup.php
+database/export_production_ready.php
+database/alter_users_status.php
+database/upgrade_*.php
+database/create_role_permissions.php
+Dockerfile
+render.yaml
