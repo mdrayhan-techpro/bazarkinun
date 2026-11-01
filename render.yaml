@@ -18,7 +18,7 @@ services:
       - key: DB_NAME
         value: bazarkinun_db
       - key: DB_USER
-        value: 3ozXEirLvxNyLS4.root
+        value: 3ozXEiRLvxNyLS4.root
       - key: DB_SSL
         value: "true"
       - key: CURL_VERIFY_SSL
