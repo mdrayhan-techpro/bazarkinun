@@ -76,7 +76,7 @@ if ($db_ssl === 'true' || strpos($db_host, 'tidbcloud.com') !== false || (int)$d
     if (file_exists($caBundle)) {
         $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = $caBundle;
     }
-    $pdoOptions[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
+    $pdoOptions[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
 }
 
 try {
