@@ -76,6 +76,7 @@ $diag = [
         'DB_USER' => $db_user,
         'DB_PASS_CONFIGURED' => !empty($db_pass),
         'DB_PASS_LENGTH' => strlen($db_pass),
+        'DB_PASS_PREVIEW' => !empty($db_pass) ? (substr($db_pass, 0, 2) . '***' . substr($db_pass, -2)) : 'none',
         'DB_SSL' => $db_ssl,
         'CA_FILE_FOUND' => $caFound,
     ],
