@@ -10,19 +10,18 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_URL
-        value: https://bazarkinun-web.onrender.com
+        value: https://bazarkinun.avenor.bond
+      - key: DB_HOST
+        value: gateway01.ap-southeast-1.prod.aws.tidbcloud.com
       - key: DB_PORT
         value: "4000"
+      - key: DB_NAME
+        value: bazarkinun_db
+      - key: DB_USER
+        value: 3ozXEirLvxNyLS4.root
       - key: DB_SSL
         value: "true"
       - key: CURL_VERIFY_SSL
         value: "true"
-      - key: DB_HOST
-        sync: false
-      - key: DB_NAME
-        sync: false
-      - key: DB_USER
-        sync: false
       - key: DB_PASS
         sync: false
-

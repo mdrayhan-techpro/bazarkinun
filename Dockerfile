@@ -57,10 +57,13 @@ RUN mkdir -p /var/www/html/uploads/lists \
 RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 # Render dynamically passes $PORT (default 10000 or 80)
-# Create a startup wrapper script to bind Apache to $PORT
+# Create a startup wrapper script to bind Apache to $PORT and populate .env with runtime environment variables
 RUN echo '#!/bin/bash\n\
 PORT_TO_USE="${PORT:-80}"\n\
 sed -i "s/80/${PORT_TO_USE}/g" /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf\n\
+env | grep -E "^(DB_|APP_|CURL_|PORT)" > /var/www/html/.env\n\
+chown www-data:www-data /var/www/html/.env\n\
+chmod 644 /var/www/html/.env\n\
 exec apache2-foreground' > /usr/local/bin/start-server.sh \
     && chmod +x /usr/local/bin/start-server.sh
 

@@ -18,17 +18,23 @@
                     (strpos($val, "'") === 0 && substr($val, -1) === "'")) {
                     $val = substr($val, 1, -1);
                 }
-                if (!array_key_exists($key, $_SERVER) && !array_key_exists($key, $_ENV)) {
-                    putenv("{$key}={$val}");
-                    $_ENV[$key] = $val;
-                    $_SERVER[$key] = $val;
-                }
+                putenv("{$key}={$val}");
+                $_ENV[$key] = $val;
+                $_SERVER[$key] = $val;
             }
         }
     }
 })();
 
-$app_env = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'development');
+function getDbEnvConfig($key, $default = '') {
+    $v = getenv($key);
+    if ($v !== false && $v !== '') return trim((string)$v);
+    if (!empty($_ENV[$key])) return trim((string)$_ENV[$key]);
+    if (!empty($_SERVER[$key])) return trim((string)$_SERVER[$key]);
+    return $default;
+}
+
+$app_env = getDbEnvConfig('APP_ENV', 'development');
 if ($app_env === 'production') {
     error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
     ini_set('display_errors', '0');
@@ -57,11 +63,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$db_host = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? '127.0.0.1');
-$db_port = getenv('DB_PORT') ?: ($_ENV['DB_PORT'] ?? '3306');
-$db_name = getenv('DB_NAME') ?: ($_ENV['DB_NAME'] ?? 'bazarkinun_db');
-$db_user = getenv('DB_USER') ?: ($_ENV['DB_USER'] ?? 'root');
-$db_pass = getenv('DB_PASS') !== false ? getenv('DB_PASS') : ($_ENV['DB_PASS'] ?? 'B@nR@y#257');
+$db_host = getDbEnvConfig('DB_HOST', '127.0.0.1');
+$db_port = getDbEnvConfig('DB_PORT', '3306');
+$db_name = getDbEnvConfig('DB_NAME', 'bazarkinun_db');
+$db_user = getDbEnvConfig('DB_USER', 'root');
+$db_pass = getDbEnvConfig('DB_PASS', 'B@nR@y#257');
 
 $pdoOptions = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -70,11 +76,20 @@ $pdoOptions = [
 ];
 
 // Cloud & TiDB Serverless SSL Connection Support
-$db_ssl = getenv('DB_SSL') ?: ($_ENV['DB_SSL'] ?? '');
+$db_ssl = getDbEnvConfig('DB_SSL', '');
 if ($db_ssl === 'true' || strpos($db_host, 'tidbcloud.com') !== false || (int)$db_port === 4000) {
-    $caBundle = '/etc/ssl/certs/ca-certificates.crt';
-    if (file_exists($caBundle)) {
-        $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = $caBundle;
+    $possibleCAs = [
+        '/etc/ssl/certs/ca-certificates.crt',
+        '/etc/pki/tls/certs/ca-bundle.crt',
+        '/etc/ssl/ca-bundle.pem',
+        'C:\\Program Files\\Git\\usr\\ssl\\certs\\ca-bundle.crt',
+        'C:\\xampp\\apache\\bin\\curl-ca-bundle.crt'
+    ];
+    foreach ($possibleCAs as $ca) {
+        if (file_exists($ca)) {
+            $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = $ca;
+            break;
+        }
     }
     $pdoOptions[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
 }
