@@ -389,7 +389,7 @@ INSERT INTO `discount_rules` VALUES
 ('3', 'Buy 1 Get 1 Free Promo', 'বাই ১ গেট ১ ফ্রি অফার', NULL, 'bogo', 'single_product', '2', NULL, '0.00', '1.00', 'free_product', '2', '1.00', '100.00', NULL, '0.00', 'all', 'all', NULL, NULL, '1', '0', NULL, NULL, '1', '1', '2026-09-27 14:52:57'),
 ('4', 'Cart Spend ৳2000+ Get ৳100 Cashback', '২০০০ টাকার অর্ডারে ১০০ টাকা ক্যাশব্যাক', NULL, 'cart_spend', 'entire_cart', NULL, NULL, '100.00', '1.00', 'discount_amount', NULL, '0.00', '0.00', NULL, '2000.00', 'all', 'all', NULL, NULL, '1', '0', NULL, NULL, '1', '1', '2026-09-27 14:52:57'),
 ('5', 'Welcome Coupon 5% Off', 'প্রথম অর্ডারে ৫% ছাড় কুপন', NULL, 'coupon', 'entire_cart', NULL, NULL, '5.00', '1.00', 'discount_percent', NULL, '0.00', '0.00', NULL, '500.00', 'all', 'all', 'BAZAR5', NULL, '1', '0', NULL, NULL, '1', '1', '2026-09-27 14:52:57'),
-('6', 'Potato + Onion Combo Offer', 'আলু ও পেঁয়াজ কম্বো অফার', '🎁 কম্বো ফ্রি গিফট', 'combo_bundle', 'multi_products', NULL, '[2,3]', '0.00', '1.00', '', '4', '1.00', '100.00', NULL, '0.00', 'all', 'all', NULL, NULL, '1', '0', NULL, NULL, '1', '1', '2026-09-28 15:55:37');
+('6', 'Potato + Onion Combo Offer', 'আলু ও পেঁয়াজ কম্বো অফার', '🎁 কম্বো ফ্রি গিফট', 'combo_bundle', 'multi_products', NULL, '[2,3]', '0.00', '1.00', 'free_product', '4', '1.00', '100.00', NULL, '0.00', 'all', 'all', NULL, NULL, '1', '0', NULL, NULL, '1', '1', '2026-09-28 15:55:37');
 
 -- --------------------------------------------------------
 -- Table structure for `dp_sale_items`
