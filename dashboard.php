@@ -21,7 +21,15 @@ if (in_array($currentUserRole, ['admin', 'super_admin', 'author'])) {
     $userRoleType = 'admin';
     $roleLabel = 'Super Admin';
     $roleBadge = '<span style="background: #ede9fe; color: #6d28d9; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-crown" style="color: #7c3aed;"></i> Super Admin</span>';
-} elseif (in_array($currentUserRole, ['manager', 'management', 'operation'])) {
+} elseif ($currentUserRole === 'management') {
+    $userRoleType = 'management';
+    $roleLabel = 'Management Board';
+    $roleBadge = '<span style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-building-columns" style="color: #475569;"></i> Management Board</span>';
+} elseif ($currentUserRole === 'operation') {
+    $userRoleType = 'operation';
+    $roleLabel = 'Operation';
+    $roleBadge = '<span style="background: #fffbeb; color: #d97706; border: 1px solid #fde68a; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-gears" style="color: #d97706;"></i> Operation</span>';
+} elseif ($currentUserRole === 'manager') {
     $userRoleType = 'manager';
     $roleLabel = 'Store Manager';
     $roleBadge = '<span style="background: #ecfdf5; color: #059669; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-user-tie" style="color: #059669;"></i> Store Manager</span>';
@@ -2118,7 +2126,7 @@ if (!function_exists('renderRichEditor')) {
                     <img src="assets/bazarkinundotcom_logo.png" alt="BazarKinun.com Logo" class="sidebar-logo" onerror="this.src='https://placehold.co/120x46?text=BazarKinun.com';">
                     <div class="sidebar-brand-text">
                         <h1 class="brand-title"><span style="color: #15803d;">Bazar</span><span style="color: #f97316;">Kinun</span><span style="color: #15803d;">.com</span></h1>
-                        <span class="brand-badge" style="<?= $userRoleType === 'manager' ? 'background: #059669; color: #fff;' : ($userRoleType === 'staff' ? 'background: #2563eb; color: #fff;' : '') ?>"><?= strtoupper($roleLabel) ?></span>
+                        <span class="brand-badge" style="<?= $userRoleType === 'management' ? 'background: #334155; color: #fff;' : ($userRoleType === 'operation' ? 'background: #d97706; color: #fff;' : ($userRoleType === 'manager' ? 'background: #059669; color: #fff;' : ($userRoleType === 'staff' ? 'background: #2563eb; color: #fff;' : ''))) ?>"><?= strtoupper($roleLabel) ?></span>
                     </div>
                 </div>
                 <button type="button" class="sidebar-close-btn" onclick="toggleSidebar()">&times;</button>
@@ -2231,8 +2239,12 @@ if (!function_exists('renderRichEditor')) {
 
             <div class="sidebar-footer">
                 <div class="user-profile-card">
-                    <div class="user-avatar" style="<?= $userRoleType === 'manager' ? 'background:#ecfdf5; color:#059669;' : ($userRoleType === 'staff' ? 'background:#eff6ff; color:#2563eb;' : '') ?>">
-                        <?php if ($userRoleType === 'manager'): ?>
+                    <div class="user-avatar" style="<?= $userRoleType === 'management' ? 'background:#f1f5f9; color:#334155;' : ($userRoleType === 'operation' ? 'background:#fffbeb; color:#d97706;' : ($userRoleType === 'manager' ? 'background:#ecfdf5; color:#059669;' : ($userRoleType === 'staff' ? 'background:#eff6ff; color:#2563eb;' : ''))) ?>">
+                        <?php if ($userRoleType === 'management'): ?>
+                            <i class="fa-solid fa-building-columns"></i>
+                        <?php elseif ($userRoleType === 'operation'): ?>
+                            <i class="fa-solid fa-gears"></i>
+                        <?php elseif ($userRoleType === 'manager'): ?>
                             <i class="fa-solid fa-user-tie"></i>
                         <?php elseif ($userRoleType === 'staff'): ?>
                             <i class="fa-solid fa-motorcycle"></i>

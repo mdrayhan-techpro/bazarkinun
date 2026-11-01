@@ -71,6 +71,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     ]);
                 } catch (Exception $e) {}
 
+                // Clean up any previous session state to avoid cross-role contamination
+                unset(
+                    $_SESSION['admin_id'], $_SESSION['admin_name'], $_SESSION['admin_phone'], $_SESSION['admin_role'],
+                    $_SESSION['author_id'], $_SESSION['author_name'], $_SESSION['author_phone'], $_SESSION['author_role'],
+                    $_SESSION['manager_id'], $_SESSION['manager_name'], $_SESSION['manager_phone'], $_SESSION['manager_role'],
+                    $_SESSION['staff_id'], $_SESSION['staff_name'], $_SESSION['staff_phone'], $_SESSION['staff_role'],
+                    $_SESSION['user_permissions']
+                );
+
                 // Set unified session variables
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'] ?: 'Portal User';
@@ -89,13 +98,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     $_SESSION['author_name'] = $user['name'] ?: 'Super Admin';
                     $_SESSION['author_phone'] = $user['phone'];
                     $_SESSION['author_role'] = 'admin';
+                    getUserPermissions($pdo, true);
                     header('Location: dashboard.php?tab=summary');
                     exit;
                 } elseif ($role === 'manager' || $role === 'management' || $role === 'operation') {
                     $_SESSION['manager_id'] = $user['id'];
-                    $_SESSION['manager_name'] = $user['name'] ?: 'Store Manager';
+                    $defaultTitle = ($role === 'management') ? 'Management Board' : (($role === 'operation') ? 'Operation' : 'Store Manager');
+                    $_SESSION['manager_name'] = $user['name'] ?: $defaultTitle;
                     $_SESSION['manager_phone'] = $user['phone'];
-                    $_SESSION['manager_role'] = 'manager';
+                    $_SESSION['manager_role'] = $role;
+                    getUserPermissions($pdo, true);
                     header('Location: dashboard.php?tab=summary');
                     exit;
                 } elseif ($role === 'rider' || $role === 'staff') {
@@ -105,6 +117,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     $_SESSION['staff_phone'] = $user['phone'];
                     $_SESSION['staff_role'] = 'rider';
                     $_SESSION['staff_location'] = $user['default_location'] ?? 'Uttara, Dhaka';
+                    getUserPermissions($pdo, true);
                     header('Location: dashboard.php?tab=staff_panel');
                     exit;
                 } else {
